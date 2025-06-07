@@ -58,6 +58,8 @@ int main () {
     const int SCREEN_WIDTH = 800;
     const int SCREEN_HEIGHT = 600;
 
+    const char* pause_message = "Press Space to unpause";
+
     ball.radius = 15;
     ball.x = SCREEN_WIDTH / 2;
     ball.y = SCREEN_HEIGHT / 2;
@@ -78,6 +80,8 @@ int main () {
     int player_points = 0;
     int computer_points = 0;
 
+    bool game_paused = true;
+
     InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Pong");
     SetTargetFPS(60);
 
@@ -85,21 +89,23 @@ int main () {
 
         // check ball out of screen
         if (ball.x > SCREEN_WIDTH) {
+            game_paused = true;
             player_points++;
             ball.x = SCREEN_WIDTH/2;
             ball.y = SCREEN_HEIGHT/2;
             ball.speed_x = 5;
             ball.speed_y = 5;
-            computer.y = SCREEN_HEIGHT/2;
-            player.y = SCREEN_HEIGHT/2;
+            computer.y = SCREEN_HEIGHT/2 - computer.height/2;
+            player.y = SCREEN_HEIGHT/2 - player.height/2;
         } else if (ball.x < 0) {
+            game_paused = true;
             computer_points++;
             ball.x = SCREEN_WIDTH/2;
             ball.y = SCREEN_HEIGHT/2;
             ball.speed_x = 5;
             ball.speed_y = 5;
-            computer.y = SCREEN_HEIGHT/2;
-            player.y = SCREEN_HEIGHT/2;
+            computer.y = SCREEN_HEIGHT/2 - computer.height/2;
+            player.y = SCREEN_HEIGHT/2 - player.height/2;
         }
 
         // check collision with paddle
@@ -113,18 +119,27 @@ int main () {
             ball.speed_x > 0 ? ball.speed_x += .1 : ball.speed_x -= .1;
             ball.speed_y > 0 ? ball.speed_y += .1 : ball.speed_y -= .1;
         }
+
+        if (IsKeyPressed(KEY_SPACE)) {
+            game_paused = !game_paused;
+        }
         
         BeginDrawing();
             // Updating
-            ball.Update();
-            player.Update();
-            computer.Update(ball.y);
+            if (game_paused == false) {
+                ball.Update();
+                player.Update();
+                computer.Update(ball.y);
+            }
 
             // Drawing
             ClearBackground(BLACK);
             DrawLine(SCREEN_WIDTH/2, 0, SCREEN_WIDTH/2, SCREEN_HEIGHT, WHITE);
             DrawText(TextFormat("%i", player_points), 20, 20, 30, WHITE);
             DrawText(TextFormat("%i", computer_points), SCREEN_WIDTH - 30, 20, 30, WHITE);
+            if (game_paused) {
+                DrawText(pause_message, SCREEN_WIDTH/2 - MeasureText(pause_message, 30)/2, SCREEN_HEIGHT/2, 30, WHITE);
+            }
             ball.Draw();
             player.Draw();
             computer.Draw();
